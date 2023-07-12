@@ -6,6 +6,9 @@ BRANCH=$2
 shift
 shift
 
+PRERELEASE_FLAG=0
+RELEASE_FILES_ARR=()
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     
@@ -38,9 +41,19 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
 
+    -pre|--prerelease)
+      PRERELEASE_FLAG=1
+      shift
+      ;;
+
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+      
     *)
-      echo "Unknown argument: $1"
-      exit
+      RELEASE_FILES_ARR+=("$1") # save positional arg
+      shift # past argument
       ;;
   esac
 done
@@ -89,6 +102,18 @@ then
   GENERATE_VERSION_CMD="$GENERATE_VERSION_CMD  --force"
 fi
 
-VERSION=$(eval "$GENERATE_VERSION_CMD")
+VERSION_TAG=v$(eval "$GENERATE_VERSION_CMD")
 
-echo $VERSION
+RELEASE_FILES=$( IFS=' '; echo "${RELEASE_FILES_ARR[*]}" )
+
+GH_RELEASE_PARAMS="release create"
+GH_RELEASE_PARAMS="$GH_RELEASE_PARAMS $VERSION_TAG"
+
+if [ $PRERELEASE_FLAG -eq 1 ]
+then
+  GH_RELEASE_PARAMS="$GH_RELEASE_PARAMS --prerelease"
+fi
+
+GH_RELEASE_PARAMS="$GH_RELEASE_PARAMS $RELEASE_FILES"
+
+echo gh "$GH_RELEASE_PARAMS"

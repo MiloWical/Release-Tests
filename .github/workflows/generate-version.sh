@@ -50,7 +50,7 @@ while [[ $# -gt 0 ]]; do
 
     *)
       echo "Unknown argument: $1"
-      exit
+      exit 1
       ;;
   esac
 done
@@ -91,6 +91,7 @@ RELEASE_SUFFIX=$(sed -rn 's/.*-(\S+).*/\1/p' <<< "$CURRENT_RELEASE_TAG")
 if [ -z $V_NOW ]
 then
   V_NOW="0.0.0"
+  V_DEFAULT=1
 fi
 
 IFS=.
@@ -128,7 +129,7 @@ else
   then
     V_NEXT_ARR[2]=0
   else
-    if [ "$RELEASE_SUFFIX" == "$VERSION_SUFFIX" ] || [ $FORCE_FLAG -eq 1 ]
+    if [ "$RELEASE_SUFFIX" == "$VERSION_SUFFIX" ] || [ $FORCE_FLAG -eq 1 ] || [ -n $V_DEFAULT ]
     then
       ((V_NEXT_ARR[VERSION_INDEX]++))
     fi  

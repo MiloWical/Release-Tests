@@ -124,11 +124,11 @@ if [ ! -z $PATCH_MASK ]
 then
   V_NEXT_ARR[2]=$PATCH_MASK
 else 
- if [ $RESET_PATCH -eq 1 ]
+  if [ $RESET_PATCH -eq 1 ]
   then
     V_NEXT_ARR[2]=0
   else
-      if [ "$RELEASE_SUFFIX" == "$VERSION_SUFFIX" ] || [ $FORCE_FLAG -eq 1 ]
+    if [ "$RELEASE_SUFFIX" == "$VERSION_SUFFIX" ] || [ $FORCE_FLAG -eq 1 ]
     then
       ((V_NEXT_ARR[VERSION_INDEX]++))
     fi  

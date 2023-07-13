@@ -136,6 +136,11 @@ then
   V_NEXT_ARR[2]=0
 fi
 
+if [ "${V_NEXT_ARR[0]}" -gt "${V_NOW_ARR[0]}" ]
+then
+  V_NEXT_ARR[1]=0
+fi
+
 # --- Output new version ---
 
 unset IFS

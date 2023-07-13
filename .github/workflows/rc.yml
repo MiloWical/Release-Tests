@@ -1,0 +1,49 @@
+name: 'Create Release Candidate'
+run-name: '${{ github.workflow }} for ${{ github.sha }}'
+
+on: workflow_dispatch
+
+permissions:
+  pull-requests: read
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: Add SSH key
+      env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      run: |
+          mkdir -p /home/runner/.ssh
+          # Replace example.com with the hostname of the machine
+          # you're SSH-ing into
+          # ssh-keyscan example.com >> /home/runner/.ssh/known_hosts
+          echo "${{ secrets.AUTOMATION_PRIVATE_KEY }}" > /home/runner/.ssh/github_actions
+          chmod 600 /home/runner/.ssh/github_actions
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null	
+          ssh-add /home/runner/.ssh/github_actions
+    
+    - name: Configure GitHub
+      env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      run: |
+          git config --global user.email "milo.wical@gmail.com"
+          git config --global user.name "J.A.R.V.I.S. [GitHub Actions]"
+
+
+    - name: Checkout
+      uses: actions/checkout@v3 
+
+    - name: Create Release
+      run: |
+        ${{ github.workspace }}/.github/workflows/create-github-release.sh '${{ github.repository }}' origin/main \
+        --prerelease \
+        --suffix rc \
+        '${{ github.workspace }}/tacocat.txt' \
+        '${{ github.workspace }}/src/pkg/package.nupkg'

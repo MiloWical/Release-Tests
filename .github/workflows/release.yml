@@ -4,8 +4,7 @@ run-name: '${{ github.workflow }} for ${{ github.sha }}'
 on: workflow_dispatch
 
 permissions:
-  pull-requests: read
-  contents: read
+  contents: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

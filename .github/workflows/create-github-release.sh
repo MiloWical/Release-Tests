@@ -1,3 +1,5 @@
+#! /bin/bash
+
 # --- Process command-line arguments ---
 
 REPO=$1
@@ -58,6 +60,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# --- Process commit comments for automated versioning ---
+
 COMMIT=$(git log -1 --format='%B%n%N' "$BRANCH")
 RELEASE_TYPE=$(sed -rn 's/.*\(RELEASE_TYPE:([a-zA-Z]+)\).*/\1/p' <<< "$COMMIT")
 
@@ -66,12 +70,16 @@ then
   RELEASE_TYPE="patch"
 fi
 
+# --- Read current release tag from GitHub --- 
+
 SCRIPT_PATH=$(dirname "$0")
 
 READ_RELEASE_CMD="$SCRIPT_PATH/read-github-release-tag.sh"
 READ_RELEASE_CMD="$READ_RELEASE_CMD $REPO"
 
 RELEASE_TAG=$(eval "$READ_RELEASE_CMD")
+
+# --- Generate the new version tag ---
 
 GENERATE_VERSION_CMD="$SCRIPT_PATH/generate-version.sh"
 GENERATE_VERSION_CMD="$GENERATE_VERSION_CMD $RELEASE_TAG"
@@ -104,10 +112,14 @@ fi
 
 VERSION_TAG=v$(eval "$GENERATE_VERSION_CMD")
 
+# --- Read additional release files ---
+
 RELEASE_FILES=$( IFS=' '; echo "${RELEASE_FILES_ARR[*]}" )
 
+# --- Create the GitHub release ---
+
 GH_RELEASE_PARAMS="release create"
-GH_RELEASE_PARAMS="$GH_RELEASE_PARAMS $VERSION_TAG"
+GH_RELEASE_PARAMS="$GH_RELEASE_PARAMS $VERSION_TAG --generate-notes"
 
 if [ $PRERELEASE_FLAG -eq 1 ]
 then

@@ -95,46 +95,48 @@ then
 fi
 
 IFS=.
-read -ra V_NEXT_ARR <<< "$V_NOW"
+read -ra V_NOW_ARR <<< "$V_NOW"
 
-if [ ! -z $MAJOR_MASK ] && [ "$MAJOR_MASK" -ne "${V_NEXT_ARR[0]}" ]
-then
-  RESET_PATCH=1
-else
-  RESET_PATCH=0
-fi
+V_NEXT_ARR=(${V_NOW_ARR[*]})
 
-if [ ! -z $MINOR_MASK ] && [ "$MINOR_MASK" -ne "${V_NEXT_ARR[1]}" ]
-then
-  RESET_PATCH=1
-else
-  RESET_PATCH=0
-fi
+# --- Process masking ---
+
+MASKED_INDEX=-1
 
 if [ ! -z $MAJOR_MASK ]
 then
   V_NEXT_ARR[0]=$MAJOR_MASK
+  MASKED_INDEX=0
 fi
 
 if [ ! -z $MINOR_MASK ]
 then
   V_NEXT_ARR[1]=$MINOR_MASK
+  MASKED_INDEX=1
 fi
 
 if [ ! -z $PATCH_MASK ]
 then
   V_NEXT_ARR[2]=$PATCH_MASK
-else 
-  if [ $RESET_PATCH -eq 1 ]
-  then
-    V_NEXT_ARR[2]=0
-  else
-    if [ "$RELEASE_SUFFIX" == "$VERSION_SUFFIX" ] || [ $FORCE_FLAG -eq 1 ] || [ -n $V_DEFAULT ]
-    then
-      ((V_NEXT_ARR[VERSION_INDEX]++))
-    fi  
-  fi
+  MASKED_INDEX=2
 fi
+
+# --- Perform the increment, if applicable ---
+
+if [ $VERSION_INDEX -ne $MASKED_INDEX ]
+then
+  if ([ -z $RELEASE_SUFFIX ] || [ "$RELEASE_SUFFIX" == "$VERSION_SUFFIX" ]) || [ $FORCE_FLAG -eq 1 ] || [ ! -z $V_DEFAULT ]
+  then
+    ((V_NEXT_ARR[VERSION_INDEX]++))
+  fi  
+fi
+
+if [ "${V_NEXT_ARR[0]}" -gt "${V_NOW_ARR[0]}" ] || [ "${V_NEXT_ARR[1]}" -gt "${V_NOW_ARR[1]}" ]
+then
+  V_NEXT_ARR[2]=0
+fi
+
+# --- Output new version ---
 
 unset IFS
 V_NEXT="${V_NEXT_ARR[0]}.${V_NEXT_ARR[1]}.${V_NEXT_ARR[2]}"

@@ -84,7 +84,7 @@ fi
 # --- Process release tag ---
 
 V_NOW=$(sed -rn 's/v?([0-9]\.[0-9]\.[0-9]).*/\1/p' <<< "$CURRENT_RELEASE_TAG")
-RELEASE_SUFFIX=$(sed -rn 's/.*-(\S+).*/\1/p' <<< "$CURRENT_RELEASE_TAG")
+RELEASE_SUFFIX=$(sed -rn 's/[^-]+-(\S+).*/\1/p' <<< "$CURRENT_RELEASE_TAG")
 
 # --- Process version configurations ---
 
@@ -121,15 +121,31 @@ then
   MASKED_INDEX=2
 fi
 
+echo Before increment logic...
+echo "V_NOW_ARR: ${V_NOW_ARR[*]}"
+echo "V_NEXT_ARR: ${V_NEXT_ARR[*]}"
+echo "VERSION_INDEX: $VERSION_INDEX"
+echo "MASKED_INDEX: $MASKED_INDEX"
+
 # --- Perform the increment, if applicable ---
 
 if [ $VERSION_INDEX -ne $MASKED_INDEX ]
 then
+  echo "VERSION_INDEX -ne MASKED_INDEX => TRUE!"
+  echo "CURRENT_RELEASE_TAG: $CURRENT_RELEASE_TAG"
+  echo "RELEASE_SUFFIX: $RELEASE_SUFFIX"
+  echo "VERSION_SUFFIX: $VERSION_SUFFIX"
+  echo "FORCE_FLAG: $FORCE_FLAG"
+  echo "V_DEFAULT: $V_DEFAULT"
   if ([ -z $RELEASE_SUFFIX ] || [ "$RELEASE_SUFFIX" == "$VERSION_SUFFIX" ]) || [ $FORCE_FLAG -eq 1 ] || [ ! -z $V_DEFAULT ]
   then
     ((V_NEXT_ARR[VERSION_INDEX]++))
   fi  
 fi
+
+echo After increment logic...
+echo "V_NOW_ARR: ${V_NOW_ARR[*]}"
+echo "V_NEXT_ARR: ${V_NEXT_ARR[*]}"
 
 if [ "${V_NEXT_ARR[0]}" -gt "${V_NOW_ARR[0]}" ] || [ "${V_NEXT_ARR[1]}" -gt "${V_NOW_ARR[1]}" ]
 then
@@ -140,6 +156,10 @@ if [ "${V_NEXT_ARR[0]}" -gt "${V_NOW_ARR[0]}" ]
 then
   V_NEXT_ARR[1]=0
 fi
+
+echo After patch reset logic...
+echo "V_NOW_ARR: ${V_NOW_ARR[*]}"
+echo "V_NEXT_ARR: ${V_NEXT_ARR[*]}"
 
 # --- Output new version ---
 

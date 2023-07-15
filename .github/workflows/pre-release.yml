@@ -42,6 +42,7 @@ jobs:
       run: |
         ${{ github.workspace }}/.github/workflows/create-github-release.sh '${{ github.repository }}' origin/main \
         --prerelease \
+        --force \
         --suffix pre-release \
         '${{ github.workspace }}/tacocat.txt' \
         '${{ github.workspace }}/src/pkg/package.nupkg'
